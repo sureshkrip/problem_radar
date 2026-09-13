@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+# Excluded from the repo: it predates the local-LLM switch and is denied to the assistant's
+# editor, so it can't be verified/updated. Authoritative env list lives in DEPLOY.md.
+.env.example
+*.egg-info/
+dist/
+build/

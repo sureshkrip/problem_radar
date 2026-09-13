@@ -1,0 +1,71 @@
+{# One-problem triage card fragment. Rendered on load and after every mutation. #}
+<article class="card" data-problem-id="{{ p.id }}">
+  <div class="card-head">
+    <h1>{{ p.title }}</h1>
+    <span class="status status-{{ p.status }}">{{ p.status }}</span>
+    {% if score %}
+      <span class="composite{% if score.is_human_override %} human{% endif %}">
+        {{ '%.2f'|format(score.composite) }}
+        <small>{{ 'human' if score.is_human_override else score.model }}</small>
+      </span>
+    {% else %}
+      <span class="composite none">unscored</span>
+    {% endif %}
+    <span class="pid">#{{ p.id }}</span>
+  </div>
+
+  <p class="statement" id="statement-text">{{ p.statement }}</p>
+  <form class="statement-edit" id="statement-edit" method="post"
+        action="/problem/{{ p.id }}/statement" hidden>
+    <textarea name="statement" rows="4">{{ p.statement }}</textarea>
+    <div class="hint">Ctrl+Enter to save · Esc to cancel</div>
+  </form>
+
+  <div class="scores">
+    {% for d in dims %}
+    <div class="dim" data-dim="{{ d.key }}">
+      <span class="dim-key">{{ loop.index }}</span>
+      <span class="dim-name">{{ d.key.replace('_', ' ') }}</span>
+      <span class="dim-val">{{ d.value }}</span>
+      <span class="dim-reason">{{ d.reason }}{% if d.quote %} — <em>“{{ d.quote }}”</em>{% endif %}</span>
+    </div>
+    {% endfor %}
+    {% if not dims %}<p class="hint">Not scored yet — run <code>radar score</code>.</p>{% endif %}
+  </div>
+
+  <div class="cats">
+    <form method="post" action="/problem/{{ p.id }}/category" class="cat-form" data-axis="industry">
+      <input type="hidden" name="axis" value="industry" />
+      <label>industry</label>
+      <select name="slug" id="sel-industry">
+        {% for s in industries %}
+        <option value="{{ s }}" {% if s == primary_industry %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <form method="post" action="/problem/{{ p.id }}/category" class="cat-form" data-axis="function">
+      <input type="hidden" name="axis" value="function" />
+      <label>function</label>
+      <select name="slug" id="sel-function">
+        {% for s in functions %}
+        <option value="{{ s }}" {% if s == primary_function %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <div class="evidence">
+    <div class="evidence-head">Evidence — {{ evidence|length }} items, {{ authors }} distinct authors</div>
+    <ul>
+      {% for e in evidence %}
+      <li>
+        <span class="ev-date">{{ e.posted_at.strftime('%Y-%m-%d') if e.posted_at else '----------' }}</span>
+        <span class="ev-source">{{ e.source }}</span>
+        <span class="ev-author">{{ e.author or 'anon' }}</span>
+        {% if e.url %}<a href="{{ e.url }}" target="_blank" rel="noopener">link</a>{% endif %}
+        <span class="ev-body">{{ e.body[:160] }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</article>

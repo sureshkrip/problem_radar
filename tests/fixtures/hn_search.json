@@ -1,0 +1,39 @@
+{
+  "hits": [
+    {
+      "objectID": "111",
+      "title": "Ask HN: is there a tool to reconcile invoices automatically?",
+      "url": null,
+      "author": "alice",
+      "points": 42,
+      "num_comments": 10,
+      "created_at_i": 1725000000,
+      "story_text": "I keep reconciling invoices by hand in spreadsheets every month and it is miserable.",
+      "_tags": ["story", "author_alice", "story_111"]
+    },
+    {
+      "objectID": "222",
+      "title": null,
+      "author": "bob",
+      "points": 3,
+      "num_comments": 0,
+      "created_at_i": 1725100000,
+      "comment_text": "Same here, I wish there was something built for small landlords doing this.",
+      "_tags": ["comment", "author_bob"]
+    },
+    {
+      "objectID": "333",
+      "title": "",
+      "author": "carol",
+      "points": 0,
+      "num_comments": 0,
+      "created_at_i": 1725200000,
+      "story_text": "",
+      "_tags": ["story"]
+    }
+  ],
+  "nbHits": 3,
+  "page": 0,
+  "nbPages": 1,
+  "hitsPerPage": 50
+}

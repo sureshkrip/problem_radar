@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem Radar — triage</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body data-queue="{{ queue|tojson }}" data-cap="{{ cap }}">
+  <header>
+    <span class="brand">Problem Radar</span>
+    <span id="progress" class="progress"></span>
+    <span class="keys">
+      <kbd>j</kbd>/<kbd>k</kbd> next/prev ·
+      <kbd>s</kbd> shortlist · <kbd>p</kbd> park · <kbd>x</kbd> dead ·
+      <kbd>e</kbd> edit · <kbd>1</kbd>–<kbd>6</kbd> then <kbd>0</kbd>–<kbd>5</kbd> override · <kbd>c</kbd> category
+    </span>
+  </header>
+
+  <main id="card"><!-- card fragment loaded here --></main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

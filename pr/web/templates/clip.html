@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem Radar — clip</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body class="clip-body">
+  <header>
+    <span class="brand">Problem Radar</span>
+    <span class="keys"><a href="/">← triage queue</a></span>
+  </header>
+
+  <main class="clip-main">
+    <section class="clip-tool">
+      <h1>Manual capture</h1>
+      <p class="hint">
+        For sources that can't be scraped (Upwork, G2, Capterra). Drag the button below to your
+        bookmarks bar. On any page, select the relevant text and click it — title, URL and
+        selection are captured in one step.
+      </p>
+      <p>
+        <a class="bookmarklet" href="{{ bookmarklet }}"
+           onclick="return false;">📌 Clip to Radar</a>
+      </p>
+      <p class="hint">
+        (Clicking it here does nothing — it only works once saved as a bookmark and used on
+        another page.)
+      </p>
+    </section>
+
+    <section class="clip-tool">
+      <h2>Or paste manually</h2>
+      <form method="post" action="/clip" class="clip-form">
+        <label>Source label
+          <input type="text" name="source_label" placeholder="g2.com / upwork / …" />
+        </label>
+        <label>URL
+          <input type="url" name="url" placeholder="https://…" />
+        </label>
+        <label>Title
+          <input type="text" name="title" placeholder="short title (optional)" />
+        </label>
+        <label>Text / selection
+          <textarea name="text" rows="6" required
+                    placeholder="the complaint, request, or review text"></textarea>
+        </label>
+        <label>Notes
+          <input type="text" name="notes" placeholder="your note (optional)" />
+        </label>
+        <button type="submit">Clip it</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

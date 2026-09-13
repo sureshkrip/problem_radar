@@ -1,0 +1,34 @@
+# Scoring rubric configuration (used from Phase 2 onward). In config so weights can be tuned
+# without a code change. See spec §6.
+
+weights:
+  willingness_to_pay: 0.25
+  frequency:          0.20
+  pain:               0.20
+  buildability:       0.15
+  fit:                0.15
+  defensibility:      0.05
+
+# Regulated-domain penalty: solo-builder reality tax on industries that carry compliance/licensure
+# work. Applied to `buildability` when the problem's primary industry is one of `domains`.
+regulated_penalty:
+  amount: -1.5
+  domains:
+    - healthcare
+    - legal
+    - finance-accounting
+    - insurance
+
+clustering:
+  # Cosine similarity bands against problem.centroid. Tuned for Qwen3-Embedding-0.6B (the local
+  # embed model), whose similarity distribution differs from OpenAI's: measured same-topic pairs
+  # land ~0.73-0.88 and clearly-different topics ~0.46-0.60, with a wide gap between. ambiguous_low
+  # sits in that gap (0.65) so borderline same-topic pairs reliably reach the LLM merge check
+  # instead of spawning duplicates; different topics still fall below and create new problems.
+  # Re-measure and retune if the embed model changes.
+  attach_threshold: 0.82   # >= this -> attach to existing problem
+  ambiguous_low:    0.65   # between low and attach -> ask the LLM to merge/split
+  # < ambiguous_low -> create a new problem
+
+triage:
+  daily_queue_cap: 20      # spec §8/§12: cap the queue so it doesn't rot

@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "result": {
+    "projects": [
+      {
+        "id": 111,
+        "title": "Automate invoice data entry from PDFs into QuickBooks",
+        "description": "We manually re-key hundreds of supplier invoices each month into QuickBooks. Looking for a tool or script to extract line items from PDF invoices and push them in via the API.",
+        "seo_url": "automate-invoice-data-entry-111",
+        "time_submitted": 1725000000,
+        "type": "fixed",
+        "budget": { "minimum": 250, "maximum": 750 },
+        "currency": { "code": "USD", "sign": "$" },
+        "bid_stats": { "bid_count": 14 }
+      },
+      {
+        "id": 222,
+        "title": "Old project from 2020 that predates the window",
+        "description": "This should be dropped by the --since filter because it was submitted long ago.",
+        "seo_url": "old-project-222",
+        "time_submitted": 1600000000,
+        "type": "hourly",
+        "budget": { "minimum": 15, "maximum": 30 },
+        "currency": { "code": "USD", "sign": "$" },
+        "bid_stats": { "bid_count": 3 }
+      }
+    ]
+  }
+}

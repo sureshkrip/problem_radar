@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem Radar — clipped</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body class="clip-body">
+  <main class="clip-main">
+    <section class="clip-tool">
+      {% if duplicate %}
+        <h1>Already clipped ✓</h1>
+        <p class="hint">This selection is already in the pipeline — nothing added.</p>
+      {% else %}
+        <h1>Clipped ✓</h1>
+        <p class="hint">
+          Saved as raw item #{{ raw_item_id }}{% if title %} — “{{ title }}”{% endif %}.
+          It'll join a problem on the next <code>radar cluster</code> run.
+        </p>
+      {% endif %}
+      <p class="hint">You can close this tab.</p>
+      <p><a href="/">← triage queue</a> · <a href="/clip">clip another</a></p>
+    </section>
+  </main>
+</body>
+</html>

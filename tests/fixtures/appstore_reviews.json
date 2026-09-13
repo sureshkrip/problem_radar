@@ -1,0 +1,40 @@
+{
+  "feed": {
+    "entry": [
+      {
+        "im:name": { "label": "Some App" },
+        "id": { "label": "app-metadata-entry-no-rating" }
+      },
+      {
+        "id": { "label": "9001" },
+        "title": { "label": "Constant crashes since the update" },
+        "content": { "label": "This used to work fine but now it crashes every time I try to export a report. Been doing it by hand in Excel again. Please fix." },
+        "im:rating": { "label": "1" },
+        "im:version": { "label": "4.2.0" },
+        "updated": { "label": "2024-08-30T10:00:00-07:00" },
+        "author": {
+          "name": { "label": "annoyed_user" },
+          "uri": { "label": "https://itunes.apple.com/us/reviews/id123" }
+        }
+      },
+      {
+        "id": { "label": "9002" },
+        "title": { "label": "Sync is unreliable" },
+        "content": { "label": "Two-star because the calendar sync drops events constantly. I would happily pay for something that just worked." },
+        "im:rating": { "label": "2" },
+        "im:version": { "label": "4.2.0" },
+        "updated": { "label": "2024-08-29T12:00:00-07:00" },
+        "author": { "name": { "label": "cal_person" } }
+      },
+      {
+        "id": { "label": "9003" },
+        "title": { "label": "Love it" },
+        "content": { "label": "Five stars, works great, no notes." },
+        "im:rating": { "label": "5" },
+        "im:version": { "label": "4.2.0" },
+        "updated": { "label": "2024-08-28T12:00:00-07:00" },
+        "author": { "name": { "label": "happy_camper" } }
+      }
+    ]
+  }
+}

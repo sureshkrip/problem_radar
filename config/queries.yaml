@@ -1,0 +1,68 @@
+# Search configuration for ingest. Edit this file — do NOT put queries in code.
+#
+# `phrases` are the shared "someone has an unmet need" signals. Each source combines them
+# with its own targeting (subreddits for Reddit, raw full-text search for HN).
+
+phrases:
+  - "I wish there was"
+  - "is there a tool"
+  - "is there an app"
+  - "still doing this manually"
+  - "spreadsheet hell"
+  - "anyone know a way to"
+  - "how do you all handle"
+  - "tired of doing"
+
+hn:
+  # HN Algolia full-text search. Which post types to search.
+  tags: ["story", "comment"]
+  # Max Algolia result pages to walk per phrase (politeness / cost cap).
+  max_pages: 3
+  # Optional: override the shared phrases for HN only. Leave empty to use `phrases`.
+  phrases: []
+
+reddit:
+  # Narrow, curated list. Pulling whole subreddits buries you (see spec §5).
+  subreddits:
+    - smallbusiness
+    - Entrepreneur
+    - realestateinvesting
+    - Landlord
+    - accounting
+    - msp
+    - sysadmin
+    - freelance
+    - ecommerce
+    - nonprofit
+    - Bookkeeping
+    - PropertyManagement
+  # Results per (subreddit, phrase) search. Reddit caps at 100.
+  limit: 50
+  # Optional: override the shared phrases for Reddit only. Leave empty to use `phrases`.
+  phrases: []
+
+freelancer:
+  # Full-text queries against active projects. A posted budget is the willingness-to-pay
+  # signal (spec §2), so target categories where people pay to get a job done rather than the
+  # "I wish there was" phrasing used for HN/Reddit.
+  queries:
+    - "automation"
+    - "web scraping"
+    - "data entry"
+    - "api integration"
+    - "spreadsheet automation"
+    - "invoice automation"
+  # Projects per query (the API caps around 100).
+  limit: 50
+
+appstore:
+  # Apple app IDs (numeric) / Play package names to watch for low-star reviews — the
+  # "existing tool people hate" signal (spec §2).
+  apple_app_ids: []          # e.g. ["284882215"]  (numbers only, no "id" prefix)
+  play_package_names: []     # e.g. ["com.whatsapp"]
+  # Storefront / language for the review feeds.
+  country: us
+  # Only reviews at or below this star rating are ingested.
+  star_max: 2
+  # Apple RSS pages to walk per app (~50 reviews/page; politeness / cost cap).
+  max_pages: 3

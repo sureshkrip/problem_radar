@@ -1,0 +1,48 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": null,
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc123",
+          "title": "How do you all handle tenant screening paperwork?",
+          "selftext": "I'm doing this manually and it eats hours every week. There has to be a better way.",
+          "author": "dave",
+          "permalink": "/r/Landlord/comments/abc123/how_do_you_all_handle/",
+          "created_utc": 1725000000,
+          "ups": 57,
+          "num_comments": 23,
+          "subreddit": "Landlord",
+          "over_18": false,
+          "url": "https://www.reddit.com/r/Landlord/comments/abc123/how_do_you_all_handle/"
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "def456",
+          "title": "Anyone know a way to sync two calendars for scheduling?",
+          "selftext": "",
+          "author": "erin",
+          "permalink": "/r/smallbusiness/comments/def456/anyone_know_a_way/",
+          "created_utc": 1725100000,
+          "ups": 4,
+          "num_comments": 1,
+          "subreddit": "smallbusiness",
+          "over_18": false,
+          "url": "https://external.example.com/post"
+        }
+      },
+      {
+        "kind": "t1",
+        "data": {
+          "id": "zzz999",
+          "body": "This is a comment and must be ignored by the source.",
+          "created_utc": 1725100000
+        }
+      }
+    ]
+  }
+}
