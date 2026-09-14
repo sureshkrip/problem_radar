@@ -36,8 +36,13 @@ GEN_MODEL = os.environ.get("GEN_MODEL", "local-gen")
 # vector(N) columns in sql/001_schema.sql — change both together.
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "local-embed")
 EMBED_DIM = int(os.environ.get("EMBED_DIM", "1024"))
-# llama-embed is a small server (4 parallel); keep request batches modest.
-EMBED_BATCH_SIZE = int(os.environ.get("EMBED_BATCH_SIZE", "32"))
+# llama-embed is a small CPU server (4 parallel); keep request batches small so one HTTP call
+# stays well under the timeout, and give it a generous read timeout (local models are slow).
+EMBED_BATCH_SIZE = int(os.environ.get("EMBED_BATCH_SIZE", "8"))
+EMBED_TIMEOUT = float(os.environ.get("EMBED_TIMEOUT", "300"))
+# Generation (categorise/summaries/merge/score) on the local 4B model can be slow, especially the
+# multi-field scoring rubric; a long read timeout avoids spurious ReadTimeouts.
+GEN_TIMEOUT = float(os.environ.get("GEN_TIMEOUT", "300"))
 
 # Prompt version stamped on every score row (spec §3 invariant). Bump on prompt edits.
 PROMPT_VERSION = "v1"

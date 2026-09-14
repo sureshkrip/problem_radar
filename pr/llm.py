@@ -22,7 +22,7 @@ from typing import Any, Protocol
 
 import httpx
 
-from .config import GEN_MODEL, get_settings
+from .config import GEN_MODEL, GEN_TIMEOUT, get_settings
 
 # The six scoring dimensions, in rubric order (spec §6).
 DIMENSIONS = ["frequency", "pain", "willingness_to_pay", "buildability", "fit", "defensibility"]
@@ -131,7 +131,7 @@ class GatewayLLM:
         headers = {}
         if settings.gen_api_key:
             headers["Authorization"] = f"Bearer {settings.gen_api_key}"
-        return httpx.Client(base_url=settings.gen_base_url, timeout=120.0, headers=headers)
+        return httpx.Client(base_url=settings.gen_base_url, timeout=GEN_TIMEOUT, headers=headers)
 
     def _json(
         self, system: str, user: str, schema: dict[str, Any], max_tokens: int | None = None

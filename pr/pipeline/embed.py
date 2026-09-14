@@ -12,7 +12,7 @@ from collections.abc import Iterable
 
 import httpx
 
-from ..config import EMBED_BATCH_SIZE, EMBED_DIM, EMBED_MODEL, get_settings
+from ..config import EMBED_BATCH_SIZE, EMBED_DIM, EMBED_MODEL, EMBED_TIMEOUT, get_settings
 
 
 class Embedder:
@@ -31,7 +31,7 @@ class Embedder:
             headers["Authorization"] = f"Bearer {settings.embed_api_key}"
         return httpx.Client(
             base_url=settings.embed_base_url,
-            timeout=60.0,
+            timeout=EMBED_TIMEOUT,
             headers=headers,
         )
 
