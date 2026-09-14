@@ -12,8 +12,8 @@ from datetime import UTC, datetime, timedelta
 import typer
 
 from . import db
-from .config import MODEL_FAST, MODEL_STRONG, PROMPT_VERSION, load_scoring
-from .llm import DIMENSIONS, ClaudeLLM, GatewayLLM
+from .config import GEN_MODEL, PROMPT_VERSION, load_scoring
+from .llm import DIMENSIONS, GatewayLLM
 from .pipeline import categorise as categorise_mod
 from .pipeline import cluster as cluster_mod
 from .pipeline import filter as noise_filter
@@ -164,17 +164,20 @@ def cluster(
 
 @app.command()
 def score(
-    all_: bool = typer.Option(False, "--all", help="Re-score every problem (fast model)."),
-    top: int | None = typer.Option(None, "--top", help="Re-score top N by composite (strong)."),
+    all_: bool = typer.Option(False, "--all", help="Re-score every problem."),
+    top: int | None = typer.Option(None, "--top", help="Re-score only the top N by composite."),
 ) -> None:
-    """Categorise (if needed) and score problems against the rubric (spec §6)."""
+    """Categorise (if needed) and score problems against the rubric (spec §6).
+
+    All LLM work runs on the local gateway (GEN_MODEL). --top / --all only choose which problems
+    to (re)score; there is a single local model, so no fast/strong tiering.
+    """
     scoring = load_scoring()
     weights = scoring["weights"]
     penalty = scoring.get("regulated_penalty", {})
     strong = top is not None
-    model = MODEL_STRONG if strong else MODEL_FAST
-    llm = ClaudeLLM(model)  # scoring stays on Claude
-    cat_llm = GatewayLLM()  # categorisation runs on the local gateway
+    model = GEN_MODEL
+    llm = GatewayLLM()  # categorise + score both run on the local gateway
 
     with db.connect() as conn:
         if strong:
@@ -205,7 +208,7 @@ def score(
                 "SELECT 1 FROM problem_category WHERE problem_id = %s LIMIT 1", (pid,)
             ).fetchone()
             if not has_cat:
-                categorise_mod.categorise_problem(conn, pid, cat_llm)
+                categorise_mod.categorise_problem(conn, pid, llm)
             result = score_mod.score_problem(
                 conn, pid, llm, weights, penalty, model, PROMPT_VERSION
             )

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 
 import httpx
-import pytest
 
 from pr.llm import GatewayLLM
 
@@ -60,6 +59,10 @@ def test_categorise_passes_enums_and_parses():
     assert captured["schema"]["properties"]["industry_primary"]["enum"] == ["real-estate"]
 
 
-def test_score_is_not_implemented_on_gateway():
-    with pytest.raises(NotImplementedError):
-        GatewayLLM(client=_reply({})).score("x")
+def test_score_runs_on_gateway():
+    from pr.llm import DIMENSIONS
+
+    payload = {d: {"score": 3, "reason": "r", "evidence_quote": "q"} for d in DIMENSIONS}
+    out = GatewayLLM(client=_reply(payload)).score("some problem text")
+    assert set(out) == set(DIMENSIONS)
+    assert out["frequency"]["score"] == 3

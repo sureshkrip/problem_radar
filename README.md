@@ -53,14 +53,14 @@ running **Qwen3-Embedding-0.6B** (1024-dim, matches the `vector(1024)` schema). 
 per-call cost. Configure with `EMBED_BASE_URL` (default `http://127.0.0.1:4000/v1`),
 `EMBED_API_KEY` (LiteLLM virtual key), `EMBED_MODEL` (the gateway's model alias) and `EMBED_DIM`
 (default 1024 — must equal the `vector(N)` columns in `sql/001_schema.sql`).
-**Categorise + summaries + merge:** the box's `llama-gen` → **Qwen3-4B-Instruct** via the same
-LiteLLM gateway, with a JSON-schema `response_format` (grammar-constrained, so the two taxonomy
-axes are enforced as enums — a 4B model can't emit an off-taxonomy slug). Configure with
-`GEN_BASE_URL` (default = the gateway), `GEN_API_KEY` (defaults to `EMBED_API_KEY` — same
-gateway/project), `GEN_MODEL` (the gateway's alias for llama-gen).
-**Scoring:** stays on Claude — `claude-haiku-4-5` first pass, `claude-opus-4-8` top-slice
-re-score — with strict JSON-schema structured outputs, where model quality matters most.
-Requires `ANTHROPIC_API_KEY` (full env reference in [`DEPLOY.md`](DEPLOY.md)).
+**All generative jobs — categorise, summaries, merge, and the 6-dimension scoring rubric —**
+run on the box's `llama-gen` → **Qwen3-4B-Instruct** via the same LiteLLM gateway, with a
+JSON-schema `response_format` (grammar-constrained, so the taxonomy axes are enforced as enums and
+the rubric can't come back malformed). Fully local: **no external provider key.** Configure with
+`GEN_BASE_URL` (default = the gateway), `GEN_API_KEY` (defaults to `EMBED_API_KEY`), `GEN_MODEL`
+(default `local-gen`). To route any job to a different model — including a Claude-backed alias —
+point `GEN_MODEL` at it in the gateway; the app carries no provider SDK of its own. Full env
+reference in [`DEPLOY.md`](DEPLOY.md).
 
 ## Local development
 
@@ -74,7 +74,7 @@ docker run -d --name radar-pg \
 
 # 2. Configure env
 # create .env with the vars listed in DEPLOY.md (DATABASE_URL, EMBED_*/GEN_* gateway,
-# ANTHROPIC_API_KEY, REDDIT_*, FREELANCER_API_TOKEN, RADAR_BASIC_AUTH_*)
+# REDDIT_*, FREELANCER_API_TOKEN, RADAR_BASIC_AUTH_*)
 
 # 3. Install deps
 uv sync
@@ -86,10 +86,10 @@ uv run radar init-db
 uv run radar ingest --source hn --since 2d
 uv run radar ingest --source reddit --since 2d
 
-# 6. Cluster into problems, then categorise + score (needs EMBED_* gateway + ANTHROPIC_API_KEY)
+# 6. Cluster into problems, then categorise + score (all via the local GEN_* gateway)
 uv run radar cluster
-uv run radar score --all          # cheap first pass over everything
-uv run radar score --top 20       # stronger re-score of the top slice
+uv run radar score --all          # score every problem
+uv run radar score --top 20       # re-score just the top slice by composite
 uv run radar list --min-score 3.5 --limit 20
 uv run radar show <problem_id>
 ```

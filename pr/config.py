@@ -24,14 +24,10 @@ CONFIG_DIR = REPO_ROOT / "config"
 SQL_DIR = REPO_ROOT / "sql"
 
 
-# Scoring models (spec §6): cheap fast pass over everything, stronger re-score of the top slice.
-# Scoring stays on Claude (quality matters most on the rubric).
-MODEL_FAST = "claude-haiku-4-5"
-MODEL_STRONG = "claude-opus-4-8"
-
-# Categorisation + summaries + the ambiguous-band merge decision run on the box's local
-# LiteLLM gateway (OpenAI-compatible) → llama-gen (Qwen3-4B-Instruct). Enum/shape are enforced
-# with a JSON-schema response_format (grammar-constrained on llama.cpp). Env-overridable.
+# All generative jobs — summaries, ambiguous-band merge, categorisation AND the 6-dimension
+# scoring rubric — run on the box's local LiteLLM gateway (OpenAI-compatible) → llama-gen
+# (Qwen3-4B-Instruct). Enum/shape are enforced with a JSON-schema response_format (grammar-
+# constrained on llama.cpp). No external provider key. Point GEN_MODEL at any gateway alias.
 GEN_MODEL = os.environ.get("GEN_MODEL", "local-gen")
 
 # Embeddings: routed through the local LiteLLM gateway on the box (OpenAI-compatible), served
@@ -54,7 +50,6 @@ class Settings:
     reddit_client_secret: str | None
     reddit_user_agent: str
     freelancer_api_token: str | None
-    anthropic_api_key: str | None
     embed_base_url: str
     embed_api_key: str | None
     gen_base_url: str
@@ -76,7 +71,6 @@ def get_settings() -> Settings:
             "REDDIT_USER_AGENT", "problem-radar/0.1 (single-user tool)"
         ),
         freelancer_api_token=os.environ.get("FREELANCER_API_TOKEN"),
-        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
         # LiteLLM gateway on the box (OpenAI-compatible). Base URL includes the /v1 prefix;
         # the embeddings path is appended in embed.py.
         embed_base_url=os.environ.get("EMBED_BASE_URL", "http://127.0.0.1:4000/v1"),

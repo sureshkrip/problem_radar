@@ -1,4 +1,4 @@
-"""LLM helpers (Claude via the official Anthropic SDK).
+"""LLM helpers (all jobs run on the box's local LiteLLM gateway — no external provider key).
 
 Four jobs the pipeline delegates to a model:
 - `summarize`   → a neutral title + one-paragraph statement when creating a new problem
@@ -6,9 +6,12 @@ Four jobs the pipeline delegates to a model:
 - `categorise`  → the two-axis taxonomy, constrained to the enums (spec §4)
 - `score`       → the six-dimension rubric as strict JSON (spec §6)
 
-`LLM` is a Protocol so tests inject a fake with no SDK/network. `ClaudeLLM` is the real
-implementation. Structured outputs enforce shape (and enums) server-side; we still validate
-and retry once on violation, per spec §6.
+`LLM` is a Protocol so tests inject a fake with no network. `GatewayLLM` is the real
+implementation: OpenAI-compatible chat completions against the gateway (→ Qwen3-4B `local-gen`)
+with a JSON-schema `response_format` that enforces shape and the taxonomy enums (grammar-
+constrained on llama.cpp). We still validate and retry once on malformed JSON, per spec §6.
+To route any job to a different model (including a Claude-backed alias), point `GEN_MODEL` at it
+in the gateway — the app needs no provider SDK or key of its own.
 """
 
 from __future__ import annotations
@@ -108,66 +111,13 @@ def _dim_schema() -> dict[str, Any]:
     }
 
 
-class ClaudeLLM:
-    """Real implementation. `model` selects the tier (fast pass vs top-slice re-score)."""
-
-    def __init__(self, model: str, client: Any | None = None, max_tokens: int = 2048) -> None:
-        self.model = model
-        self.max_tokens = max_tokens
-        if client is None:
-            import anthropic
-
-            client = anthropic.Anthropic()
-        self._client = client
-
-    # --- internal ------------------------------------------------------------
-
-    def _json(self, system: str, user: str, schema: dict[str, Any]) -> dict[str, Any]:
-        """One structured-output call, with a single retry on malformed JSON."""
-        last_err: Exception | None = None
-        for _ in range(2):
-            resp = self._client.messages.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                system=system,
-                messages=[{"role": "user", "content": user}],
-                output_config={"format": {"type": "json_schema", "schema": schema}},
-            )
-            text = next((b.text for b in resp.content if b.type == "text"), "")
-            try:
-                return json.loads(text)
-            except json.JSONDecodeError as exc:  # pragma: no cover - retry path
-                last_err = exc
-        raise ValueError(f"model returned non-JSON output: {last_err}")
-
-    # --- LLM protocol --------------------------------------------------------
-
-    def summarize(self, text: str) -> dict[str, str]:
-        return self._json(SUMMARIZE_SYSTEM, text, _summarize_schema())
-
-    def merge(self, item_text: str, problem_statement: str) -> bool:
-        user = f"EXISTING PROBLEM:\n{problem_statement}\n\nNEW ITEM:\n{item_text}"
-        return bool(self._json(MERGE_SYSTEM, user, _merge_schema()).get("same_problem", False))
-
-    def categorise(
-        self, text: str, industries: list[str], functions: list[str]
-    ) -> dict[str, Any]:
-        schema = _categorise_schema(industries, functions)
-        return self._json(_read_prompt("categorise_v1.md"), text, schema)
-
-    def score(self, text: str) -> dict[str, dict[str, Any]]:
-        return self._json(_read_prompt("score_v1.md"), text, _dim_schema())
-
-
 class GatewayLLM:
-    """Local implementation for categorise + summaries + merge (spec §4/§5).
+    """The single LLM implementation — all four jobs run on the local gateway (spec §4/§5/§6).
 
     Talks to the box's LiteLLM gateway (OpenAI-compatible chat completions) → llama-gen
     (Qwen3-4B-Instruct). Shape and the taxonomy enums are enforced with a `response_format`
-    JSON schema, grammar-constrained on llama.cpp, so a 4B model can't emit an off-taxonomy
-    slug. Same one-retry-on-malformed-JSON contract as ClaudeLLM.
-
-    Scoring is intentionally NOT implemented here — the 6-dimension rubric stays on Claude.
+    JSON schema, grammar-constrained on llama.cpp, so the model can't emit an off-taxonomy slug
+    or a malformed rubric. One-retry-on-malformed-JSON contract.
     """
 
     def __init__(self, client: httpx.Client | None = None, max_tokens: int = 1024) -> None:
@@ -183,7 +133,9 @@ class GatewayLLM:
             headers["Authorization"] = f"Bearer {settings.gen_api_key}"
         return httpx.Client(base_url=settings.gen_base_url, timeout=120.0, headers=headers)
 
-    def _json(self, system: str, user: str, schema: dict[str, Any]) -> dict[str, Any]:
+    def _json(
+        self, system: str, user: str, schema: dict[str, Any], max_tokens: int | None = None
+    ) -> dict[str, Any]:
         client = self._client_or_default()
         owns_client = self._client is None
         last_err: Exception | None = None
@@ -193,7 +145,7 @@ class GatewayLLM:
                     "/chat/completions",
                     json={
                         "model": GEN_MODEL,
-                        "max_tokens": self.max_tokens,
+                        "max_tokens": max_tokens or self.max_tokens,
                         "temperature": 0,
                         "messages": [
                             {"role": "system", "content": system},
@@ -230,7 +182,8 @@ class GatewayLLM:
         return self._json(_read_prompt("categorise_v1.md"), text, schema)
 
     def score(self, text: str) -> dict[str, dict[str, Any]]:
-        raise NotImplementedError("scoring runs on Claude (ClaudeLLM), not the local gateway")
+        # Larger budget: the rubric returns 6 dimensions, each with a reason + evidence quote.
+        return self._json(_read_prompt("score_v1.md"), text, _dim_schema(), max_tokens=2048)
 
 
 def _read_prompt(name: str) -> str:

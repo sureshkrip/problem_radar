@@ -40,18 +40,19 @@ All runtime-only (none needed at build time). Set in Coolify → Environment Var
 | Var | Purpose |
 |---|---|
 | `DATABASE_URL` | the Postgres resource's **Internal URL** |
-| `ANTHROPIC_API_KEY` | scoring (Claude Haiku → Opus) |
 | `EMBED_BASE_URL` | LiteLLM gateway, e.g. `http://<gateway-host>:4000/v1` — see networking note |
 | `EMBED_API_KEY` | LiteLLM **virtual key** (not the master key) |
 | `EMBED_MODEL` | `local-embed` (gateway alias → Qwen3-Embedding-0.6B) |
 | `GEN_BASE_URL` | same gateway `…/v1` (defaults to the embed gateway if unset) |
 | `GEN_API_KEY` | LiteLLM virtual key (falls back to `EMBED_API_KEY`) |
-| `GEN_MODEL` | `local-gen` (gateway alias → Qwen3-4B-Instruct) |
+| `GEN_MODEL` | `local-gen` (gateway alias → Qwen3-4B-Instruct) — runs categorise, summaries **and** scoring |
 | `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` / `REDDIT_USER_AGENT` | Reddit ingest |
 | `FREELANCER_API_TOKEN` | Freelancer ingest |
 | `RADAR_BASIC_AUTH_USER` / `RADAR_BASIC_AUTH_PASS` | HTTP basic auth (see §6) |
 
 Notes:
+- **No external provider key.** Every LLM job (embeddings, categorise, summaries, merge, scoring)
+  goes through the local gateway. There is no `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`.
 - `EMBED_DIM` defaults to **1024** (matches the `vector(1024)` schema and `local-embed`). Only set
   it if you change the embed model — and change `sql/001_schema.sql` to match.
 - The app-store source needs no key (Apple RSS is public; Google Play via `google-play-scraper`).
@@ -82,9 +83,9 @@ so scoring never runs mid-ingest.
 | cluster-and-score | `uv run radar cluster && uv run radar score --top 50` | `30 4 * * *` |
 
 `cluster` embeds (via `local-embed`) + clusters + summarises/merges and categorises (via
-`local-gen`); `score` runs the rubric on Claude. Raise the default 300s task timeout for the
-cluster-and-score task. A zero exit code only means the command ran — after the first run, check
-rows actually landed.
+`local-gen`); `score` runs the rubric on `local-gen` too. Raise the default 300s task timeout for
+the cluster-and-score task (local generation is slower than a hosted API). A zero exit code only
+means the command ran — after the first run, check rows actually landed.
 
 ## 5. Backups
 
